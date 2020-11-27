@@ -30,6 +30,8 @@ def train_one_fold(fold, model, optimizer):
 
 	criterion = DenseCrossEntropy()
 
+	train_fold_results = []
+
 	for epoch in range(EPOCHS):
 		model.train()
 		t_loss = 0
@@ -64,7 +66,7 @@ def train_one_fold(fold, model, optimizer):
 			if val_labels is None:
 				val_labels = label.clone().squeeze(-1)
 			else:
-				val_labels = torch.cat((val_labels, labels.size(-1)), dim=0)
+				val_labels = torch.cat((val_labels, label.squeeze(-1)), dim=0)
 
 			img = img.to(DEVICE, dtype=torch.float)
 			label = label.to(DEVICE, dtype=torch.float)
@@ -72,10 +74,10 @@ def train_one_fold(fold, model, optimizer):
 			with torch.no_grad():
 				outputs = model(img)
 
-				loss = criterion(outputs, labels.squeeze(-1))
+				loss = criterion(outputs, label.squeeze(-1))
 				val_loss += loss.item()
 
-				preds = torch.softmax(outputs, dim=1).data.gpu()
+				preds = torch.softmax(outputs, dim=1).data.cuda()
 
 				if val_preds is None:
 					val_preds = preds
@@ -119,7 +121,7 @@ def k_fold_train(folds):
 		torch.save({
 			'fold': i,
 			'lr': optimizer.state_dict()['params_groups'][0]['lr'],
-			'model_state_dict': model.gpu().state_dict(),
+			'model_state_dict': model.state_dict(),
 			'optimizer_state_dict': optimizer.state_dict()
 			}, f'./model/baseline/val_loss {train_results[i].val_loss}.pth')
 

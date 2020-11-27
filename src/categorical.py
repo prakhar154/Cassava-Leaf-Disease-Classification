@@ -20,3 +20,4 @@ if __name__ == '__main__':
 	train_ohe = cat_feats._one_hot()
 
 	train_ohe.to_csv('./input/train_ohe.csv', index=False)
+	
